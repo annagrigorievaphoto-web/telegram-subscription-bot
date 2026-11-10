@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 CHECK_CALLBACK = "check_subscription"
 SUBSCRIBERS_FILE = os.path.join(DATA_DIR, "subscribers.json")
 SENT_FLAG_FILE = os.path.join(DATA_DIR, "materials_sent.flag")
+WELCOME_IMAGE = Path(__file__).parent / "welcome.webp"
 
 
 def load_subscribers() -> set[int]:
@@ -53,7 +55,10 @@ def build_keyboard() -> InlineKeyboardMarkup:
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(WELCOME_TEXT, reply_markup=build_keyboard())
+    with open(WELCOME_IMAGE, "rb") as photo:
+        await update.message.reply_photo(
+            photo=photo, caption=WELCOME_TEXT, reply_markup=build_keyboard()
+        )
 
 
 async def get_missing_channels(context: ContextTypes.DEFAULT_TYPE, user_id: int) -> list[str]:
