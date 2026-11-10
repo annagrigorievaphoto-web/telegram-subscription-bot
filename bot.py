@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ParseMode
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
 
 from config import (
@@ -87,7 +88,7 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await query.edit_message_caption(caption=SUCCESS_TEXT)
         else:
             save_subscriber(user_id)
-            await query.edit_message_caption(caption=WAIT_TEXT)
+            await query.edit_message_caption(caption=WAIT_TEXT, parse_mode=ParseMode.HTML)
     else:
         missing_list = "\n".join(f"• {chan}" for chan in missing)
         await query.answer(
