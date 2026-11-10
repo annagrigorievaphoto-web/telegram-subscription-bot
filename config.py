@@ -46,7 +46,12 @@ WAIT_TEXT = (
     "материалы не придут."
 )
 
-SUCCESS_TEXT = f"Спасибо за подписку! Вот ваши материалы:\n{MATERIALS_LINK}"
+SUCCESS_TEXT = (
+    "🎉 <b>Спасибо за подписку!</b>\n\n"
+    "Вы подписаны на:\n"
+    f"{CHANNELS_LIST_TEXT}\n\n"
+    f"📬 Вот ваши материалы:\n{MATERIALS_LINK}"
+)
 
 UNSUBSCRIBED_TEXT_TEMPLATE = (
     "Кажется, вы отписались от некоторых каналов, поэтому не можем прислать материалы:\n"

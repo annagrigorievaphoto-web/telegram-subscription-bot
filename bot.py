@@ -85,7 +85,7 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if not missing:
         await query.answer()
         if datetime.now(timezone.utc) >= RELEASE_DATETIME:
-            await query.edit_message_caption(caption=SUCCESS_TEXT)
+            await query.edit_message_caption(caption=SUCCESS_TEXT, parse_mode=ParseMode.HTML)
         else:
             save_subscriber(user_id)
             await query.edit_message_caption(caption=WAIT_TEXT, parse_mode=ParseMode.HTML)
@@ -113,7 +113,9 @@ async def send_materials_to_all(context: ContextTypes.DEFAULT_TYPE) -> None:
 
         try:
             if not missing:
-                await context.bot.send_message(chat_id=user_id, text=SUCCESS_TEXT)
+                await context.bot.send_message(
+                    chat_id=user_id, text=SUCCESS_TEXT, parse_mode=ParseMode.HTML
+                )
             else:
                 missing_list = "\n".join(f"• {chan}" for chan in missing)
                 await context.bot.send_message(
