@@ -40,6 +40,8 @@ RELEASE_DATE_HUMAN = RELEASE_DATETIME.strftime("%d.%m.%Y")
 
 WAIT_TEXT = (
     "✅ <b>Отлично, подписка подтверждена!</b>\n\n"
+    "Вы подписаны на:\n"
+    f"{CHANNELS_LIST_TEXT}\n\n"
     f"📬 Материалы придут вам сюда же, в этот чат, <b>{RELEASE_DATE_HUMAN}</b>.\n\n"
     f"⚠️ <b>Важно:</b> не отписывайтесь от каналов до этого дня.\n"
     f"{RELEASE_DATE_HUMAN} бот ещё раз проверит подписку — если вы отпишетесь, "
