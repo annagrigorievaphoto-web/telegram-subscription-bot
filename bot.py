@@ -1,15 +1,14 @@
-import json
 import logging
-import os
 from datetime import datetime, timezone
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
 
 from config import (
+    ANNOUNCE_CHANNEL,
+    ANNOUNCE_TEXT,
     BOT_TOKEN,
     CHANNEL_USERNAMES,
-    DATA_DIR,
     RELEASE_DATETIME,
     SUCCESS_TEXT,
     WAIT_TEXT,
@@ -20,26 +19,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 CHECK_CALLBACK = "check_subscription"
-SUBSCRIBERS_FILE = os.path.join(DATA_DIR, "subscribers.json")
-SENT_FLAG_FILE = os.path.join(DATA_DIR, "materials_sent.flag")
-
-
-def load_subscribers() -> set[int]:
-    try:
-        with open(SUBSCRIBERS_FILE, "r", encoding="utf-8") as f:
-            return set(json.load(f))
-    except FileNotFoundError:
-        return set()
-
-
-def save_subscriber(chat_id: int) -> None:
-    subscribers = load_subscribers()
-    if chat_id in subscribers:
-        return
-    subscribers.add(chat_id)
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(SUBSCRIBERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(sorted(subscribers), f)
 
 
 def build_keyboard() -> InlineKeyboardMarkup:
@@ -67,7 +46,6 @@ async def get_missing_channels(context: ContextTypes.DEFAULT_TYPE, user_id: int)
 async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     user_id = query.from_user.id
-    chat_id = query.message.chat_id
 
     try:
         missing = await get_missing_channels(context, user_id)
@@ -77,7 +55,6 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     if not missing:
-        save_subscriber(chat_id)
         await query.answer()
         if datetime.now(timezone.utc) >= RELEASE_DATETIME:
             await query.edit_message_text(SUCCESS_TEXT)
@@ -91,22 +68,9 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
 
 
-async def send_materials_to_all(context: ContextTypes.DEFAULT_TYPE) -> None:
-    if os.path.exists(SENT_FLAG_FILE):
-        logger.info("Материалы уже разосланы ранее, пропускаю.")
-        return
-
-    subscribers = load_subscribers()
-    logger.info("Рассылаю материалы %s подписчикам.", len(subscribers))
-    for chat_id in subscribers:
-        try:
-            await context.bot.send_message(chat_id=chat_id, text=SUCCESS_TEXT)
-        except Exception:
-            logger.exception("Не удалось отправить материалы chat_id=%s", chat_id)
-
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(SENT_FLAG_FILE, "w", encoding="utf-8") as f:
-        f.write(datetime.now(timezone.utc).isoformat())
+async def post_announcement(context: ContextTypes.DEFAULT_TYPE) -> None:
+    logger.info("Публикую пост с материалами в %s", ANNOUNCE_CHANNEL)
+    await context.bot.send_message(chat_id=ANNOUNCE_CHANNEL, text=ANNOUNCE_TEXT)
 
 
 def main() -> None:
@@ -114,8 +78,14 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(check_subscription, pattern=f"^{CHECK_CALLBACK}$"))
 
-    delay_seconds = max(0, (RELEASE_DATETIME - datetime.now(timezone.utc)).total_seconds())
-    application.job_queue.run_once(send_materials_to_all, when=delay_seconds)
+    delay_seconds = (RELEASE_DATETIME - datetime.now(timezone.utc)).total_seconds()
+    if delay_seconds > 0:
+        application.job_queue.run_once(post_announcement, when=delay_seconds)
+    else:
+        logger.warning(
+            "RELEASE_DATETIME уже прошёл, автопубликация в %s не запланирована.",
+            ANNOUNCE_CHANNEL,
+        )
 
     application.run_polling()
 

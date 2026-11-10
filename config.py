@@ -13,13 +13,13 @@ CHANNEL_USERNAMES = [
     chan.strip() for chan in os.environ["CHANNEL_USERNAMES"].split(",") if chan.strip()
 ]
 
-# Ссылка, которую бот рассылает подписчикам в день релиза
+# Ссылка на материалы
 MATERIALS_LINK = os.environ["MATERIALS_LINK"]
 
-# Папка для хранения списка подписчиков между перезапусками (нужен volume на Railway)
-DATA_DIR = os.environ.get("DATA_DIR", ".")
+# Канал, куда бот опубликует пост со ссылкой в день релиза
+ANNOUNCE_CHANNEL = os.environ["ANNOUNCE_CHANNEL"]
 
-# Дата и время рассылки материалов, например "2026-12-01T09:00:00"
+# Дата и время публикации поста, например "2026-12-01T09:00:00"
 RELEASE_TZ = os.environ.get("RELEASE_TZ", "Europe/Copenhagen")
 RELEASE_DATETIME = datetime.fromisoformat(
     os.environ.get("RELEASE_DATETIME", "2026-12-01T09:00:00")
@@ -36,8 +36,10 @@ WELCOME_TEXT = (
 RELEASE_DATE_HUMAN = RELEASE_DATETIME.strftime("%d.%m.%Y")
 
 WAIT_TEXT = (
-    "Отлично, подписка подтверждена! Материалы автоматически придут вам "
-    f"{RELEASE_DATE_HUMAN} — ничего больше делать не нужно."
+    "Отлично, подписка подтверждена! Материалы опубликуют в канале "
+    f"{ANNOUNCE_CHANNEL} {RELEASE_DATE_HUMAN} — просто загляните туда в этот день."
 )
 
 SUCCESS_TEXT = f"Спасибо за подписку! Вот ваши материалы:\n{MATERIALS_LINK}"
+
+ANNOUNCE_TEXT = f"Материалы уже доступны:\n{MATERIALS_LINK}"
