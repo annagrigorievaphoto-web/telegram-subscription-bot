@@ -16,10 +16,10 @@ CHANNEL_USERNAMES = [
 # Ссылка на материалы
 MATERIALS_LINK = os.environ["MATERIALS_LINK"]
 
-# Канал, куда бот опубликует пост со ссылкой в день релиза
-ANNOUNCE_CHANNEL = os.environ["ANNOUNCE_CHANNEL"]
+# Папка для хранения списка подписчиков между перезапусками (нужен volume на Railway)
+DATA_DIR = os.environ.get("DATA_DIR", ".")
 
-# Дата и время публикации поста, например "2026-12-01T09:00:00"
+# Дата и время рассылки материалов, например "2026-12-01T09:00:00"
 RELEASE_TZ = os.environ.get("RELEASE_TZ", "Europe/Copenhagen")
 RELEASE_DATETIME = datetime.fromisoformat(
     os.environ.get("RELEASE_DATETIME", "2026-12-01T09:00:00")
@@ -36,10 +36,16 @@ WELCOME_TEXT = (
 RELEASE_DATE_HUMAN = RELEASE_DATETIME.strftime("%d.%m.%Y")
 
 WAIT_TEXT = (
-    "Отлично, подписка подтверждена! Материалы опубликуют в канале "
-    f"{ANNOUNCE_CHANNEL} {RELEASE_DATE_HUMAN} — просто загляните туда в этот день."
+    "Отлично, подписка подтверждена! Материалы придут вам сюда же, в этот чат, "
+    f"{RELEASE_DATE_HUMAN}. Важно: не отписывайтесь от каналов до этого дня — "
+    f"{RELEASE_DATE_HUMAN} бот ещё раз проверит подписку, и если вы отпишетесь, "
+    "материалы не придут."
 )
 
 SUCCESS_TEXT = f"Спасибо за подписку! Вот ваши материалы:\n{MATERIALS_LINK}"
 
-ANNOUNCE_TEXT = f"Материалы уже доступны:\n{MATERIALS_LINK}"
+UNSUBSCRIBED_TEXT_TEMPLATE = (
+    "Кажется, вы отписались от некоторых каналов, поэтому не можем прислать материалы:\n"
+    "{missing_list}\n\n"
+    "Подпишитесь заново и нажмите «Проверить подписку» в сообщении выше."
+)
