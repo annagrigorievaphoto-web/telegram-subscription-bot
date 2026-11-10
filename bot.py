@@ -84,10 +84,10 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if not missing:
         await query.answer()
         if datetime.now(timezone.utc) >= RELEASE_DATETIME:
-            await query.edit_message_text(SUCCESS_TEXT)
+            await query.edit_message_caption(caption=SUCCESS_TEXT)
         else:
             save_subscriber(user_id)
-            await query.edit_message_text(WAIT_TEXT)
+            await query.edit_message_caption(caption=WAIT_TEXT)
     else:
         missing_list = "\n".join(f"• {chan}" for chan in missing)
         await query.answer(
